@@ -33,20 +33,12 @@
       "id": 4
     },
     {
-      "date": "",
-      "todo": "",
-      "location": "",
-      "note": "",
+      "date": "2021-11-09",
+      "todo": "Bangku To Do",
+      "location": "https://images.unsplash.com/photo-1637520942665-9a4f2d0b08f8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw3fHx8ZW58MHx8fHw%3D&auto=format&fit=crop&w=500&q=60",
+      "note": "Bangku Note",
       "status": "on going",
       "id": 5
-    },
-    {
-      "date": "2021-11-17",
-      "todo": "qwe",
-      "location": "asd",
-      "note": "zxc",
-      "status": "on going",
-      "id": 6
     },
     {
       "date": "2021-11-19",
@@ -55,6 +47,14 @@
       "note": "Laptop XPS",
       "status": "on going",
       "id": 7
+    },
+    {
+      "date": "2021-11-03",
+      "todo": "Surface ToDo",
+      "location": "https://images.unsplash.com/photo-1633115384130-49f50dd42ff0?ixlib=rb-1.2.1&ixid=MnwxMjA3fDF8MHxlZGl0b3JpYWwtZmVlZHwxfHx8ZW58MHx8fHw%3D&auto=format&fit=crop&w=500&q=60",
+      "note": "Surface Note",
+      "status": "on going",
+      "id": 8
     }
   ]
 }

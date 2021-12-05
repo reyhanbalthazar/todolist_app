@@ -1,6 +1,8 @@
 import React from 'react';
-import Table from './Table';
 import axios from 'axios';
+import Table from './Table';
+import ModalAdd from './ModalAdd';
+import ModalEdit from './ModalEdit';
 
 class Form extends React.Component {
     constructor(props) {
@@ -43,15 +45,25 @@ class Form extends React.Component {
         }).then((response) => {
             // memanggil data terbaru untuk memperbarui data pada state
             this.getData()
+            this.setState({
+                date: "",
+                todo: "",
+                location: "",
+                note: ""
+            })
         }).catch((err) => {
             console.log(err)
         })
     }
 
     btDelete = (index) => {
-        let temp = [...this.state.todoList]
-        temp.splice(index, 1)
-        this.setState({ todoList: temp })
+
+        axios.delete(`http://localhost:2000/todoList/${this.state.todoList[index].id}`)
+            .then((response) => {
+                this.getData()
+            }).catch((err) => {
+                console.log(err)
+            })  
     }
 
     btEdit = (idx) => {
@@ -61,68 +73,20 @@ class Form extends React.Component {
 
     printData = () => {
         return this.state.todoList.map((value, index) => {
-            if (this.state.selectedIdx == index) {
-                return (
-                    <div class="modal fade" id="exampleModalEdit" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">EDIT TABLE</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <div id="form" className="form-group" >
-                                        <p>{index +1}</p>
-                                        <p>Date</p>
-                                        <input class="form-control" type="date" defaultValue={value.date} />
-                                        <p>To Do</p>
-                                        <input class="form-control" type="text" defaultValue={value.todo} />
-                                        <p>Location</p>
-                                        <input class="form-control" type="text" defaultValue={value.location} />
-                                        <p>Note</p>
-                                        <input class="form-control" type="text" defaultValue={value.note} />
-                                        <p>Status</p>
-                                        <input class="form-control" type="text" defaultValue={value.status} />
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" onClick={this.btSubmit}>Save changes</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    // <tr>
-                    //     <td>{index + 1}</td>
-                    //     <td><input type="date" defaultValue={value.date} /></td>
-                    //     <td><input type="text" defaultValue={value.todo} /></td>
-                    //     <td><input type="text" defaultValue={value.location} /></td>
-                    //     <td><input type="text" defaultValue={value.note} /></td>
-                    //     <td><input type="text" defaultValue={value.status} /></td>
-                    //     <td>
-                    //         <button className="btn btn-danger" type="button" onClick={() => this.setState({ selectedIdx: null })}>Cancel</button>
-                    //         <button className="btn btn-warning" type="button" >Save</button>
-                    //     </td>
-                    // </tr>
-                )
-            } else {
-                return (
-                    <tr>
-                        <td>{index + 1}</td>
-                        <td>{value.date}</td>
-                        <td>{value.todo}</td>
-                        <td><img src={value.location} width="25%" alt="..." /></td>
-                        <td>{value.note}</td>
-                        <td>{value.status}</td>
-                        <td>
-                            <button className="btn btn-danger" type="button" onClick={() => this.btDelete(index)}>Delete</button>
-                            <button className="btn btn-warning" type="button" data-toggle="modal" data-target="#exampleModalEdit" onClick={() => this.btEdit(index)}>Edit</button>
-                        </td>
-                    </tr>
-                )
-            }
+            return (
+                <tr>
+                    <td>{index + 1}</td>
+                    <td>{value.date}</td>
+                    <td>{value.todo}</td>
+                    <td><img src={value.location} width="25%" alt="..." /></td>
+                    <td>{value.note}</td>
+                    <td>{value.status}</td>
+                    <td>
+                        <button className="btn btn-danger" type="button" onClick={() => this.btDelete(index)}>Delete</button>
+                        <button className="btn btn-warning" type="button" data-toggle="modal" data-target="#editModal" onClick={() => this.btEdit(index)}>Edit</button>
+                    </td>
+                </tr>
+            )
         })
     }
 
@@ -130,6 +94,30 @@ class Form extends React.Component {
     handleInput = (value, propState) => {
         console.log(value, propState)
         this.setState({ [propState]: value })
+    }
+
+    btSave = () => {
+        let { date, todo, location, note, todoList, selectedIdx } = this.state
+        console.log(date, todo, location, note)
+        let editData = {
+            date: date == "" ? todoList[selectedIdx].date : date, //untuk menghindari empty string dan mengambil value, dari value sebelum di edit
+            todo: todo == "" ? todoList[selectedIdx].todo : todo, //untuk menghindari empty string dan mengambil value, dari value sebelum di edit
+            location: location == "" ? todoList[selectedIdx].location : location, //untuk menghindari empty string dan mengambil value, dari value sebelum di edit
+            note: note == "" ? todoList[selectedIdx].note : note //untuk menghindari empty string dan mengambil value, dari value sebelum di edit
+        }
+        axios.patch(`http://localhost:2000/todoList/${todoList[selectedIdx].id}`, editData)
+            .then((response) => {
+                this.getData()
+                this.setState({
+                    date: "",
+                    todo: "",
+                    location: "",
+                    note: "",
+                    selectedIdx: null
+                })
+            }).catch((err) => {
+                console.log(err)
+            })
     }
 
     // CARA PERTAMA MENDAPATKAN VALUE
@@ -143,45 +131,28 @@ class Form extends React.Component {
     render() {
         return (
             <div className="m-4">
-                <div className="d-flex justify-content-end">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalAddProduct">Add Product</button>
-                    <div class="modal fade" id="exampleModalAddProduct" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">ADD PRODUCT</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <div id="form" className="form-group" >
-                                        {/* CARA KEDUA MENDAPATKAN VALUE */}
-                                        <p>Date</p>
-                                        <input class="form-control" id="date" type="date" ref="iptDate" onChange={(event) => this.handleInput(event.target.value, "date")} />
-                                        <p>To Do</p>
-                                        <input class="form-control" id="todo" type="text" ref="iptTodo" onChange={(event) => this.handleInput(event.target.value, "todo")} />
-
-                                        {/* CARA PERTAMA MENDAPATKAN VALUE */}
-                                        {/* <p>To Do</p>
-                                        <input id="todo" type="text" ref="iptTodo" onChange={this.handleInputTodo}  /> */}
-
-                                        <p>Location</p>
-                                        <input class="form-control" id="location" type="text" ref="iptLocation" onChange={(event) => this.handleInput(event.target.value, "location")} />
-                                        <p>Note</p>
-                                        <textarea class="form-control" id="note" type="text" ref="iptNote" onChange={(event) => this.handleInput(event.target.value, "note")} ></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                    <button type="button" class="btn btn-primary" onClick={this.btSubmit}>Save changes</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
                 <div className="container-fluid">
+                    <ModalAdd
+                        handleInput={this.handleInput}
+                        date={this.state.date}
+                        todo={this.state.todo}
+                        location={this.state.location}
+                        note={this.state.note}
+                        btSubmit={this.btSubmit}
+                    />
+                    {
+                        this.state.todoList.length > 0 && this.state.selectedIdx != null ?
+                            <ModalEdit
+                                date={this.state.todoList[this.state.selectedIdx].date}
+                                todo={this.state.todoList[this.state.selectedIdx].todo}
+                                location={this.state.todoList[this.state.selectedIdx].location}
+                                note={this.state.todoList[this.state.selectedIdx].note}
+                                handleInput={this.handleInput}
+                                btCancel={() => this.setState({ selectedIdx: null })}
+                                btSave={this.btSave}
+                            />
+                            : null
+                    }
                     <Table cetak={this.printData()} />
                 </div>
             </div>
